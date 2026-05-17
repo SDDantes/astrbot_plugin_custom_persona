@@ -7,7 +7,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from astrbot.api import logger
+from astrbot.api import FunctionTool, logger
 from astrbot.api.event import AstrMessageEvent, filter
 from astrbot.api.provider import LLMResponse, ProviderRequest
 from astrbot.api.star import Context, Star, StarTools, register
@@ -240,6 +240,25 @@ class CustomPersonaPlugin(Star):
     @filter.on_decorating_result(priority=100)
     async def segmented_reply(self, event: AstrMessageEvent) -> None:
         await self.response_handler.segmented_reply(event)
+
+    @filter.on_using_llm_tool(priority=9999)
+    async def _on_tool_message_markers(
+        self, event: AstrMessageEvent, tool: FunctionTool, tool_args: dict | None
+    ) -> None:
+        """在工具执行前拦截 ``send_message_to_user``，处理消息中的分段/T2I/TTS 标记。"""
+        if not self.config.enabled:
+            return
+        if not tool_args or not isinstance(tool_args, dict):
+            return
+        persona = self.persona_store.resolve(event.unified_msg_origin)
+        if persona is None or not persona.segmented_reply.enabled:
+            return
+        if tool.name != "send_message_to_user":
+            return
+        messages = tool_args.get("messages")
+        if not messages or not isinstance(messages, list):
+            return
+        await self.response_handler.process_tool_messages(messages, event, persona)
 
     # ── L1 历史管理 ─────────────────────────────────
 
