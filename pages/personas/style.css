@@ -1,0 +1,267 @@
+:root {
+  color-scheme: light dark;
+  --bg: #f7f8fa;
+  --panel: #ffffff;
+  --border: #d9dee7;
+  --text: #18212f;
+  --muted: #657286;
+  --accent: #1f7a5b;
+  --danger: #e0556a;
+  --role-user: #0969da;
+  --role-assistant: #1f7a5b;
+  --role-system: #8250df;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #101418;
+    --panel: #171d23;
+    --border: #2a333d;
+    --text: #edf2f7;
+    --muted: #9aa7b5;
+    --accent: #55c49b;
+    --danger: #f7788b;
+    --role-user: #58a6ff;
+    --role-assistant: #55c49b;
+    --role-system: #bc8cff;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.45 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.shell {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+}
+
+.sidebar,
+.editor {
+  min-width: 0;
+  padding: 14px;
+}
+
+.sidebar {
+  border-right: 1px solid var(--border);
+  background: var(--panel);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+h1 {
+  flex: 1;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 650;
+}
+
+button,
+input,
+textarea {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+}
+
+button {
+  min-height: 32px;
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: var(--accent);
+}
+
+input {
+  height: 32px;
+  padding: 0 10px;
+}
+
+.list {
+  display: grid;
+  gap: 8px;
+}
+
+.item {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  text-align: left;
+}
+
+.item strong {
+  display: block;
+}
+
+.item span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* ── 编辑器区域 ────────────────────────────────────────── */
+
+.editor-area {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cm-wrap {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.cm-wrap .CodeMirror {
+  height: auto !important;
+  font-size: 13px;
+}
+
+.cm-wrap .CodeMirror-scroll {
+  max-height: none;
+}
+
+/* ── 预览面板 ──────────────────────────────────────── */
+
+.preview-panel {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--panel);
+  padding: 12px;
+}
+
+.preview-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.preview-toolbar label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.preview-toolbar input {
+  width: 220px;
+}
+
+.preview-section {
+  margin-bottom: 14px;
+}
+
+.preview-section h3 {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--muted);
+}
+
+.preview-block {
+  margin: 4px 0;
+  padding: 8px 10px;
+  border-radius: 4px;
+  font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.preview-block.msg-user {
+  border-left: 3px solid var(--role-user);
+}
+
+.preview-block.msg-assistant {
+  border-left: 3px solid var(--role-assistant);
+}
+
+.preview-block.msg-system {
+  border-left: 3px solid var(--role-system);
+}
+
+.role-tag {
+  display: inline-block;
+  padding: 0 5px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 650;
+  text-transform: uppercase;
+}
+
+.msg-user .role-tag {
+  color: var(--role-user);
+  background: color-mix(in srgb, var(--role-user) 15%, transparent);
+}
+
+.msg-assistant .role-tag {
+  color: var(--role-assistant);
+  background: color-mix(in srgb, var(--role-assistant) 15%, transparent);
+}
+
+.msg-system .role-tag {
+  color: var(--role-system);
+  background: color-mix(in srgb, var(--role-system) 15%, transparent);
+}
+
+.seg-id {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+#output {
+  min-height: 20px;
+  padding: 6px 10px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+#output.error {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--danger) 30%, transparent);
+}
+
+#preview-output {
+  min-height: 80px;
+  overflow: auto;
+}
+
+/* ── 响应式布局 ─────────────────────────────────────────── */
+
+@media (max-width: 760px) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+}

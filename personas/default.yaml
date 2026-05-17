@@ -1,0 +1,121 @@
+name: default
+display_name: Default Custom Persona
+description: A conservative sample persona showing Preamble, L1 history, tools, and output controls.
+
+activation:
+  global_default: true
+  session_bindings: []
+
+chat_history:
+  max_turns: 30
+  format_template: "[{sender_name}/{timestamp}]: {content}"
+  preset_dialogs: |
+    [System/bootstrap]: No previous persisted conversation exists for this session.
+  max_tokens: 8000
+
+dialogue_window:
+  max_messages: 100
+  keep_messages: 60
+
+segmented_reply:
+  enabled: true
+  segment_mark: "✺SEG✺"
+  interval_min: 1.5
+  interval_max: 3.5
+  t2i_trigger: "✺T2I✺"
+  tts_trigger: "✺TTS✺"
+  t2i_template: ""
+  tts_dual_output: false
+  t2i_dual_output: false
+
+no_response_mark: "✺✺✺NO_RESPONSE✺✺✺"
+
+compression:
+  assistant_template: |
+    The active context was compacted. I will continue from the summary in the next user message and preserve the current task state.
+  user_template: |
+    Context compression summary:
+    {{ summary }}
+
+segments:
+  - id: identity
+    role: SYSTEM
+    depth: 0
+    condition: ""
+    template: |
+      You are AstrBot's active assistant for this session.
+      Current time: {{ system_time }}
+      Session: {{ session_id }}
+      Platform: {{ platform_name }} / {{ message_type }}
+
+  - id: tool_rules
+    role: SYSTEM
+    depth: 10
+    condition: "tool_list"
+    template: |
+      {{ tool_call_prompt }}
+
+  - id: workspace_extra
+    role: SYSTEM
+    depth: 20
+    condition: "extra_prompt"
+    template: |
+      Workspace extra prompt from {{ extra_prompt_path }}:
+      {{ extra_prompt }}
+
+  - id: live_mode
+    role: SYSTEM
+    depth: 25
+    condition: "live_mode_prompt"
+    template: |
+      {{ live_mode_prompt }}
+
+  - id: tools_and_skills
+    role: USER
+    depth: 30
+    condition: ""
+    template: |
+      Available skills:
+      {{ skill_list or "No active skills are listed." }}
+
+      Available tools:
+      {{ tool_list or "No function tools are listed for this request." }}
+
+  - id: no_response_rule
+    role: USER
+    depth: 40
+    condition: "!streaming"
+    template: |
+      If no reply should be sent, output exactly:
+      {{ no_response_mark }}
+      Do not add any other text around that mark.
+
+  - id: segmentation_rule
+    role: USER
+    depth: 50
+    condition: ""
+    template: |
+      When a reply is naturally split into multiple chat bubbles, place {{ segment_mark }} between those parts.
+
+  - id: t2i_directive
+    role: USER
+    depth: 51
+    condition: "t2i_enabled"
+    template: |
+      If a part is long, contains formatted output (code blocks, tables, structured data), or would benefit
+      from visual rendering, prefix it with {{ t2i_trigger }}.
+
+  - id: tts_directive
+    role: USER
+    depth: 52
+    condition: "tts_enabled"
+    template: |
+      If a part is a short greeting or spoken message suitable for voice, prefix it with {{ tts_trigger }}.
+
+  - id: l1_history
+    role: USER
+    depth: 100
+    condition: ""
+    template: |
+      Recent conversation history (from the plugin chat ledger):
+      {{ chat_history or "No recent conversation history is available." }}

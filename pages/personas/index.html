@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>自定义人格管理</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/material-darker.min.css" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <aside class="sidebar">
+        <div class="topbar">
+          <h1>人格列表</h1>
+          <button id="new" type="button">新建</button>
+          <button id="refresh" type="button">刷新</button>
+        </div>
+        <div id="persona-list" class="list"></div>
+      </aside>
+
+      <section class="editor">
+        <div class="topbar">
+          <input id="persona-name" spellcheck="false" placeholder="人格名称" />
+          <button id="save" type="button">保存</button>
+          <button id="rename" type="button">重命名</button>
+          <button id="delete" type="button">删除</button>
+          <button id="preview" type="button">预览</button>
+        </div>
+        <div id="output"></div>
+        <div class="editor-area">
+          <div class="cm-wrap">
+            <textarea id="yaml" spellcheck="false"></textarea>
+          </div>
+          <div class="preview-panel" id="preview-panel">
+            <div class="preview-toolbar">
+              <label>
+                会话 ID：
+                <input id="preview-session" spellcheck="false" placeholder="preview:FriendMessage:1" />
+              </label>
+              <button id="preview-refresh" type="button">刷新预览</button>
+            </div>
+            <div id="preview-output"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/yaml/yaml.min.js"></script>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

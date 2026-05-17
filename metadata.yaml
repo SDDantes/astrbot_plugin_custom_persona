@@ -1,0 +1,8 @@
+name: astrbot_plugin_custom_persona
+display_name: 自定义人格系统
+short_desc: 自定义人格上下文和输出后处理。
+desc: "更强大的上下文管理与输出后处理 —— 为 AstrBot 提供 YAML Persona、更自由的上下文管理、更自由的输出处理等功能。"
+version: 0.1.0
+author: SDDantes
+repo: ""
+astrbot_version: ">=4.25.0"

@@ -1,0 +1,26 @@
+name: Ruff
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+jobs:
+  lint-format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Install Ruff
+        run: uv tool install ruff
+
+      - name: Run Ruff format check
+        run: ruff format --check
+
+      - name: Run Ruff lint
+        run: ruff check --output-format=github

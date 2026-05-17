@@ -1,0 +1,88 @@
+{
+  "enabled": {
+    "type": "bool",
+    "description": "启用插件",
+    "hint": "禁用后，LLM 请求不会被修改，响应也不会被后处理。",
+    "default": true
+  },
+  "timezone": {
+    "type": "string",
+    "description": "系统时间时区",
+    "hint": "用于 {{system_time}} 模板变量，例如 Asia/Tokyo、UTC。",
+    "default": "Asia/Tokyo"
+  },
+  "personas_dir": {
+    "type": "string",
+    "description": "Persona YAML 目录",
+    "hint": "留空则使用插件 data 目录。",
+    "default": ""
+  },
+  "extra_prompt_filename": {
+    "type": "string",
+    "description": "额外提示词文件名",
+    "hint": "在当前会话工作区中查找，并注入为 {{extra_prompt}}。",
+    "default": "EXTRA_PROMPT.md"
+  },
+  "routing": {
+    "type": "object",
+    "description": "模型路由",
+    "items": {
+      "mode": {
+        "type": "string",
+        "description": "路由模式",
+        "options": ["default", "simple"],
+        "default": "default"
+      },
+      "simple_model_id": {
+        "type": "string",
+        "description": "Simple 模式下的模型 ID",
+        "hint": "当 mode=simple 时，此值会被写入 ProviderRequest.model。请使用当前提供方可识别的模型名。",
+        "default": ""
+      }
+    }
+  },
+  "dialogue_window": {
+    "type": "object",
+    "description": "默认 L2 对话窗口",
+    "hint": "当 Persona 未提供自己的 dialogue_window 时使用。",
+    "items": {
+      "max_messages": {
+        "type": "int",
+        "description": "触发滑动的消息数（M1）",
+        "default": 100
+      },
+      "keep_messages": {
+        "type": "int",
+        "description": "滑动后保留的消息数（M2）",
+        "default": 60
+      }
+    }
+  },
+  "no_response": {
+    "type": "object",
+    "description": "NO_RESPONSE 输出拦截",
+    "items": {
+      "enabled": {
+        "type": "bool",
+        "description": "启用静默拦截",
+        "default": true
+      },
+      "mark": {
+        "type": "string",
+        "description": "默认静默标记",
+        "default": "✺✺✺NO_RESPONSE✺✺✺"
+      }
+    }
+  },
+  "ledger": {
+    "type": "object",
+    "description": "ConversationLedger（对话账本）",
+    "items": {
+      "per_chat_limit": {
+        "type": "int",
+        "description": "每个会话保留的消息条数",
+        "default": 1000
+      }
+    }
+  }
+}
