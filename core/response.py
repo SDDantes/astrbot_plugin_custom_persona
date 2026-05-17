@@ -288,6 +288,108 @@ class ResponseHandler:
             event.clear_result()
             event.stop_event()
 
+    # ── Tool 消息标记处理 ────────────────────
+
+    async def process_tool_messages(
+        self,
+        messages: list[dict],
+        event: AstrMessageEvent,
+        persona: PersonaConfig,
+    ) -> None:
+        """处理 ``send_message_to_user`` 等工具调用中的分段/T2I/TTS 标记。
+
+        对于每个 ``type=plain`` 的消息：
+        * 若包含 ``segment_mark`` —— 按标记分割，逐段处理
+          T2I/TTS 触发器，并以适当间隔发送。
+        * 若以 ``t2i_trigger`` 或 ``tts_trigger`` 开头 ——
+          渲染为图片/语音后发送。
+        * 处理完毕后从 ``messages`` 列表中移除，剩余消息由原始工具继续发送。
+        """
+        mark = persona.segmented_reply.segment_mark
+        t2i_trigger = persona.segmented_reply.t2i_trigger
+        tts_trigger = persona.segmented_reply.tts_trigger
+        if not (mark or t2i_trigger or tts_trigger):
+            return
+
+        indices_to_remove: list[int] = []
+
+        for idx, msg in enumerate(messages):
+            if not isinstance(msg, dict) or msg.get("type") != "plain":
+                continue
+            text = (msg.get("text") or "").strip()
+            if not text:
+                continue
+
+            needs_processing = (
+                (mark and mark in text)
+                or (t2i_trigger and text.startswith(t2i_trigger))
+                or (tts_trigger and text.startswith(tts_trigger))
+            )
+            if not needs_processing:
+                continue
+
+            target_session = str(msg.get("session") or event.unified_msg_origin)
+
+            if mark and mark in text:
+                segments = [s.strip() for s in text.split(mark) if s.strip()]
+                for seg_idx, segment in enumerate(segments):
+                    if seg_idx > 0:
+                        await asyncio.sleep(
+                            random.uniform(
+                                persona.segmented_reply.interval_min,
+                                persona.segmented_reply.interval_max,
+                            )
+                        )
+                    chain = await self._render_segment_for_tool(
+                        segment, t2i_trigger, tts_trigger, event, persona
+                    )
+                    if chain:
+                        await self._send_to_session(target_session, chain)
+            else:
+                chain = await self._render_segment_for_tool(
+                    text, t2i_trigger, tts_trigger, event, persona
+                )
+                if chain:
+                    await self._send_to_session(target_session, chain)
+
+            indices_to_remove.append(idx)
+
+        for idx in reversed(indices_to_remove):
+            messages.pop(idx)
+
+    async def _render_segment_for_tool(
+        self,
+        segment: str,
+        t2i_trigger: str,
+        tts_trigger: str,
+        event: AstrMessageEvent,
+        persona: PersonaConfig,
+    ) -> list | None:
+        """为 tool 消息路径渲染单个分段。"""
+        if t2i_trigger and segment.startswith(t2i_trigger):
+            text = segment[len(t2i_trigger) :].strip()
+            if not text:
+                return None
+            return await self._render_segment_t2i(text, event, persona)
+        elif tts_trigger and segment.startswith(tts_trigger):
+            text = segment[len(tts_trigger) :].strip()
+            if not text:
+                return None
+            return await self._render_segment_tts(text, event, persona)
+        else:
+            return [Plain(segment)]
+
+    async def _send_to_session(self, session_id: str, chain: list) -> None:
+        """向任意会话发送消息链。失败时仅记录 warning。"""
+        try:
+            await self._context.send_message(session_id, MessageChain(chain))
+        except Exception:
+            logger.warning(
+                "CustomPersona: failed to send processed message to %s",
+                session_id,
+                exc_info=True,
+            )
+
     # ── L2 维护 ────────────────────────────────────────
 
     async def sync_l2_from_agent_done(
